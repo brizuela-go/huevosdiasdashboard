@@ -46,6 +46,7 @@ import {
 import { Input } from "./ui/input";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -76,38 +77,33 @@ export function DataTable<TData, TValue>({
 
   const add = async (data: any) => {
     try {
-      console.log(data);
       await addDoc(collection(db, collectionReference), data);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   };
 
   const removeDocument = async (object: any) => {
-    console.log(object);
-
     const collectionRef = collection(db, collectionReference);
     const querySnapshot = await getDocs(collectionRef);
-    let id: string = "";
+    let id = "";
 
     querySnapshot.forEach((doc) => {
-      if (JSON.stringify(doc.data()) === JSON.stringify(object)) {
+      if (doc.data().uniqueId === object.uniqueId) {
         id = doc.id;
       }
     });
 
-    console.log(id);
-
     if (id) {
       try {
-        await deleteDoc(doc(db, collectionReference, id)); // Correct use of deleteDoc
-        // Assuming you're using Next.js' router to refresh the page
+        await deleteDoc(doc(db, collectionReference, id));
+        toast.success("Registro eliminado");
         router.refresh();
       } catch (e) {
-        console.error(e);
+        console.error("Error al eliminar el registro", e);
+        toast.error("Error al eliminar el registro");
       }
     } else {
-      console.log("Document not found or already deleted");
+      console.error("No se encontró el registro para eliminar");
+      toast.error("Error al eliminar el registro. Intente de nuevo.");
     }
   };
 
@@ -115,6 +111,8 @@ export function DataTable<TData, TValue>({
     e.preventDefault();
     await add(formData);
     router.refresh();
+    setFormData({});
+    setImagePreviewUrl("");
   };
 
   const inputs = columns.map((column) => {
@@ -131,7 +129,11 @@ export function DataTable<TData, TValue>({
 
   const handleInputChange = (e: any) => {
     // set the key and value of the input to the formData
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+      uniqueId: Math.random().toString(36).substr(2, 9),
+    });
 
     // if the input is a file, we need to upload it and then get the download url
     if (e.target.type === "file") {
@@ -141,13 +143,10 @@ export function DataTable<TData, TValue>({
       // First, upload the file
       uploadBytes(storageRef, file)
         .then((snapshot) => {
-          console.log("Uploaded a blob or file!", snapshot);
-
           // After the file is uploaded, get the download URL
           return getDownloadURL(storageRef);
         })
         .then((url) => {
-          console.log(url);
           // Update formData with the file's download URL
           setFormData({ ...formData, [e.target.name]: url });
           setImagePreviewUrl(url);

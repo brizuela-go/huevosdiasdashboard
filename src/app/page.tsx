@@ -106,6 +106,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-5  w-full">
       <PageTitle title="Panel de Control" />
+
       <section className="grid w-full grid-cols-1 gap-4 gap-x-8 transition-all sm:grid-cols-2 xl:grid-cols-4">
         {cardData.map((d, i) => (
           <Card key={i} amount={d.amount} icon={d.icon} label={d.label} />

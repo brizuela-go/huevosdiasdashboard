@@ -8,6 +8,7 @@ import SideNavbar from "@/components/SideNavbar";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 
 import { esES } from "@clerk/localizations";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
           )}
         >
           {/* sidebar */}
+          <Toaster />
           {/* <p className="border">Sidebar</p> */}
           <div className="fixed top-4 right-4">
             <UserButton afterSignOutUrl="/sign-in" />
