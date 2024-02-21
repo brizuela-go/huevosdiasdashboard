@@ -127,28 +127,35 @@ export function DataTable<TData, TValue>({
   });
 
   const [formData, setFormData] = useState({});
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
 
   const handleInputChange = (e: any) => {
     // set the key and value of the input to the formData
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    // if the input is a file, we need to upload it to firebase storage
+    // if the input is a file, we need to upload it and then get the download url
     if (e.target.type === "file") {
       const file = e.target.files[0];
       const storageRef = ref(storage, `images/${file.name}`);
-      uploadBytes(storageRef, file).then((snapshot) => {
-        console.log("Uploaded a blob or file!", snapshot);
-      });
-    }
 
-    // if the input is a file, we need to get the download url
-    if (e.target.type === "file") {
-      const file = e.target.files[0];
-      const storageRef = ref(storage, `images/${file.name}`);
-      getDownloadURL(storageRef).then((url) => {
-        console.log(url);
-        setFormData({ ...formData, [e.target.name]: url });
-      });
+      // First, upload the file
+      uploadBytes(storageRef, file)
+        .then((snapshot) => {
+          console.log("Uploaded a blob or file!", snapshot);
+
+          // After the file is uploaded, get the download URL
+          return getDownloadURL(storageRef);
+        })
+        .then((url) => {
+          console.log(url);
+          // Update formData with the file's download URL
+          setFormData({ ...formData, [e.target.name]: url });
+          setImagePreviewUrl(url);
+        })
+        .catch((error) => {
+          // Handle any errors here
+          console.error("Error uploading file and getting URL", error);
+        });
     }
   };
 
@@ -254,23 +261,26 @@ export function DataTable<TData, TValue>({
             </SheetHeader>
             <div className="grid gap-4 py-4">
               {inputs.map((input) => (
-                <Input
-                  key={input.id}
-                  id={input.id}
-                  name={input.placeholder as any}
-                  type={input.type}
-                  placeholder={input.placeholder as any}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                  accept={input.accept}
-                />
+                <div key={input.id}>
+                  <Input
+                    key={input.id}
+                    id={input.id}
+                    name={input.placeholder as any}
+                    type={input.type}
+                    placeholder={input.placeholder as any}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                    accept={input.accept}
+                  />
+                  {input.type === "file" && imagePreviewUrl && (
+                    <img src={imagePreviewUrl} alt="Preview" className="mt-2" />
+                  )}
+                </div>
               ))}
             </div>
             <SheetFooter>
               <SheetClose asChild>
-                <Button onClick={handleSubmit} type="submit">
-                  Añadir
-                </Button>
+                <Button type="submit">Añadir</Button>
               </SheetClose>
             </SheetFooter>
           </form>
