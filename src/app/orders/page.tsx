@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -65,6 +66,32 @@ const columns: ColumnDef<Payment>[] = [
                       <li key={index}>{`${item} x${quantity}`}</li>
                     ))}
                   </ul>
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>{/* get notes from the order */}</DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "notes",
+    header: "Notas",
+    cell: ({ row }) => {
+      return (
+        <div className="flex gap-2 items-center">
+          <Dialog>
+            <DialogTrigger>
+              <Button variant="outline" className="text-xs">
+                Ver
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Notas</DialogTitle>
+                <DialogDescription>
+                  <p>{row.getValue("notes")}</p>
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>

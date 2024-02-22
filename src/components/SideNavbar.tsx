@@ -13,6 +13,7 @@ import {
   CookingPot,
   Table,
   ChevronRight,
+  Layers3,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -74,6 +75,12 @@ export default function SideNavbar({}: Props) {
                 title: "Mesas",
                 href: "/tables",
                 icon: Table,
+                variant: "ghost",
+              },
+              {
+                title: "Categorías",
+                href: "/categories",
+                icon: Layers3,
                 variant: "ghost",
               },
               {

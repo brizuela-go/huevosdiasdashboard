@@ -45,7 +45,7 @@ import {
 } from "./ui/sheet";
 import { Input } from "./ui/input";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 interface DataTableProps<TData, TValue> {
@@ -73,6 +73,8 @@ export function DataTable<TData, TValue>({
       ? "waiters"
       : pathname === "/tables"
       ? "tables"
+      : pathname === "/categories"
+      ? "categories"
       : "items";
 
   const add = async (data: any) => {
@@ -118,7 +120,18 @@ export function DataTable<TData, TValue>({
   const inputs = columns.map((column) => {
     return {
       id: column.id,
-      type: column.header === "Imágen" ? "file" : "text",
+      type:
+        column.header === "Imágen"
+          ? "file"
+          : column.header === "Precio"
+          ? "number"
+          : column.header === "Número de mesa"
+          ? "number"
+          : column.header === "Categoría"
+          ? "selector"
+          : column.header === "Descripción"
+          ? "textarea"
+          : "text",
       placeholder: column.header,
       accept: "image/*",
     };
@@ -157,6 +170,20 @@ export function DataTable<TData, TValue>({
         });
     }
   };
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const querySnapshot = await getDocs(collection(db, "categories"));
+      const categories: any[] = [];
+      querySnapshot.forEach((doc) => {
+        categories.push(doc.data());
+      });
+      setCategories(categories as any);
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <div>
@@ -261,16 +288,44 @@ export function DataTable<TData, TValue>({
             <div className="grid gap-4 py-4">
               {inputs.map((input) => (
                 <div key={input.id}>
-                  <Input
-                    key={input.id}
-                    id={input.id}
-                    name={input.placeholder as any}
-                    type={input.type}
-                    placeholder={input.placeholder as any}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    accept={input.accept}
-                  />
+                  {input.type !== "selector" && input.type !== "textarea" && (
+                    <Input
+                      key={input.id}
+                      id={input.id}
+                      name={input.placeholder as any}
+                      type={input.type}
+                      placeholder={input.placeholder as any}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                      accept={input.accept}
+                    />
+                  )}
+                  {input.type === "textarea" && (
+                    <textarea
+                      key={input.id}
+                      name={input.placeholder as any}
+                      onChange={handleInputChange}
+                      placeholder="Descripción del platillo"
+                      className="col-span-3 p-2 rounded-md border w-full"
+                    ></textarea>
+                  )}
+                  {input.type === "selector" && (
+                    <select
+                      name={input.placeholder as any}
+                      onChange={handleInputChange}
+                      className="col-span-3 p-2 rounded-md border w-full"
+                    >
+                      <option value="">Selecciona una categoría</option>
+                      {categories.map((category: any) => (
+                        <option
+                          key={input.id}
+                          value={category["Nombre de la Categoría"]}
+                        >
+                          {category["Nombre de la Categoría"]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {input.type === "file" && imagePreviewUrl && (
                     <img src={imagePreviewUrl} alt="Preview" className="mt-2" />
                   )}

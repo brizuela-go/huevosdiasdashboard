@@ -36,6 +36,14 @@ const columns: ColumnDef<Payment>[] = [
     },
   },
   {
+    accessorKey: "Categoría",
+    header: "Categoría",
+  },
+  {
+    accessorKey: "Descripción",
+    header: "Descripción",
+  },
+  {
     accessorKey: "Imágen",
     header: "Imágen",
     cell: ({ row }) => {
